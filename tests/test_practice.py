@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-
+from uuid import UUID
 import pytest
 
 from pydantic import ValidationError
@@ -15,25 +15,30 @@ from ai_grading_iot.schemas.practice import (
     PracticeTask,
 )
 
+SAMPLE_PRACTICE_ID = UUID("00000000-0000-0000-0000-000000000099")
+
 
 def create_valid_practice() -> Practice:
     return Practice(
-        practice_id="PRACTICE-001",
+        practice_id=SAMPLE_PRACTICE_ID,
         title="ESP32 LED Control",
         description="Điều khiển LED bằng ESP32.",
         requirements=PracticeRequirements(
             objective="Điều khiển LED bằng ESP32.",
             tasks=[
                 PracticeTask(
-                    id="REQ01",
+                    id=UUID("00000000-0000-0000-0000-000000000001"),
+                    order=1,
                     description="Kết nối LED với ESP32.",
                 ),
                 PracticeTask(
-                    id="REQ02",
+                    id=UUID("00000000-0000-0000-0000-000000000002"),
+                    order=2,
                     description="Viết chương trình điều khiển LED.",
                 ),
                 PracticeTask(
-                    id="REQ03",
+                    id=UUID("00000000-0000-0000-0000-000000000003"),
+                    order=3,
                     description="Kiểm tra trạng thái LED.",
                 ),
             ],
@@ -53,20 +58,20 @@ def create_valid_practice() -> Practice:
         ),
         hardware=[
             PracticeHardware(
-                id="HW01",
+                id=UUID("00000000-0000-0000-0000-000000000010"),
                 name="ESP32",
                 type="microcontroller",
             ),
             PracticeHardware(
-                id="HW02",
+                id=UUID("00000000-0000-0000-0000-000000000011"),
                 name="LED",
                 type="output",
             ),
         ],
         rubric=PracticeRubricReference(
-            code_rubric_id="CODE-RUBRIC-001",
-            dashboard_rubric_id="DATA-RUBRIC-001",
-            vision_rubric_id="VISION-RUBRIC-001",
+            code_rubric_id=UUID("00000000-0000-0000-0000-000000000020"),
+            dashboard_rubric_id=UUID("00000000-0000-0000-0000-000000000021"),
+            vision_rubric_id=UUID("00000000-0000-0000-0000-000000000022"),
         ),
         version="1.0",
         status=PracticeStatus.DRAFT,
@@ -81,7 +86,7 @@ def create_valid_practice() -> Practice:
 def test_create_valid_practice():
     practice = create_valid_practice()
 
-    assert practice.practice_id == "PRACTICE-001"
+    assert practice.practice_id == SAMPLE_PRACTICE_ID
     assert practice.title == "ESP32 LED Control"
     assert practice.description == "Điều khiển LED bằng ESP32."
 
@@ -94,7 +99,7 @@ def test_create_valid_practice():
 
     assert len(practice.hardware) == 2
 
-    assert practice.rubric.code_rubric_id == "CODE-RUBRIC-001"
+    assert practice.rubric.code_rubric_id == UUID("00000000-0000-0000-0000-000000000020")
 
     assert practice.version == "1.0"
     assert practice.status == PracticeStatus.DRAFT
@@ -109,12 +114,12 @@ def test_practice_model_dump():
 
     data = practice.model_dump()
 
-    assert data["practice_id"] == "PRACTICE-001"
+    assert data["practice_id"] == SAMPLE_PRACTICE_ID
     assert data["requirements"]["objective"] == "Điều khiển LED bằng ESP32."
     assert len(data["requirements"]["tasks"]) == 3
     assert data["environment"]["board"] == "ESP32"
     assert len(data["hardware"]) == 2
-    assert data["rubric"]["code_rubric_id"] == "CODE-RUBRIC-001"
+    assert data["rubric"]["code_rubric_id"] == UUID("00000000-0000-0000-0000-000000000020")
     assert data["version"] == "1.0"
     assert data["status"] == "draft"
     assert data["metadata"]["created_by"] == "teacher-001"
@@ -125,14 +130,15 @@ def test_practice_model_dump_json():
 
     json_data = practice.model_dump_json()
 
-    assert '"practice_id":"PRACTICE-001"' in json_data
+    assert str(SAMPLE_PRACTICE_ID) in json_data
     assert '"title":"ESP32 LED Control"' in json_data
 
 
 def test_task_requires_description():
     with pytest.raises(ValidationError):
         PracticeTask(
-            id="REQ01",
+            id=UUID("00000000-0000-0000-0000-000000000001"),
+            order=1,
         )
 
 
@@ -147,14 +153,15 @@ def test_requirements_requires_at_least_one_task():
 def test_invalid_version():
     with pytest.raises(ValidationError):
         Practice(
-            practice_id="PRACTICE-001",
+            practice_id=SAMPLE_PRACTICE_ID,
             title="Test",
             description="Test",
             requirements=PracticeRequirements(
                 objective="Test",
                 tasks=[
                     PracticeTask(
-                        id="REQ01",
+                        id=UUID("00000000-0000-0000-0000-000000000001"),
+                        order=1,
                         description="Test",
                     )
                 ],
@@ -176,14 +183,15 @@ def test_invalid_version():
 def test_invalid_status():
     with pytest.raises(ValidationError):
         Practice(
-            practice_id="PRACTICE-001",
+            practice_id=SAMPLE_PRACTICE_ID,
             title="Test",
             description="Test",
             requirements=PracticeRequirements(
                 objective="Test",
                 tasks=[
                     PracticeTask(
-                        id="REQ01",
+                        id=UUID("00000000-0000-0000-0000-000000000001"),
+                        order=1,
                         description="Test",
                     )
                 ],
