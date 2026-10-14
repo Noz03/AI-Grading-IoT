@@ -1,0 +1,17 @@
+| Step | Nội dung | Trạng thái |
+|---|---|---|
+| **7** | **Backend Architecture** | ✅ Hoàn thành |
+| 8 | Database Design | ⏳ Tiếp theo |
+| 9 | Authentication & Authorization | Chưa thực hiện |
+| 10 | Practice & Course Management API | Chưa thực hiện |
+| 11 | Rubric Management API | Chưa thực hiện |
+| 12 | Submission Management API | Chưa thực hiện |
+| 13 | Code Grading Integration API | Chưa thực hiện |
+| 14 | ReactJS Frontend | Chưa thực hiện |
+| 15 | Frontend ↔ Backend Integration | Chưa thực hiện |
+| 16 | End-to-End Testing | Chưa thực hiện |
+
+toi hien tai dang co goi plus cua chatgpt va co the dung codex, toi muon codex thuc hien cac phan viec con lai bao gom Authentication & Authorization, Practice & Course Management API, Rubric Management API, Submission Management API, Code Grading Integration API.
+Dua ra cac lenh prompt hieu qua cho tung phan de codex co the thuc hien tiep cac phan code tiep theo
+Tuy nhien de co the kiem soat duoc thi truoc khi dua ra prompt cho phan tiep theo, hay dua ra mo ta chi tiet ve tinh nang do roi toi se chinh sua lai, khi da chot thi sinh ra prompt giup toi
+Thuc hien voi tung phan
