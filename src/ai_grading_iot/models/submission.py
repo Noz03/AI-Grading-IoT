@@ -5,6 +5,7 @@ from sqlalchemy import (
     CheckConstraint,
     DateTime,
     ForeignKey,
+    Integer,
     String,
     Text,
     UniqueConstraint,
@@ -68,6 +69,9 @@ class Submission(Base):
         default=list,
         nullable=False,
     )
+
+    data_evidence: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    revision: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
 
     status: Mapped[str] = mapped_column(
         String(20),

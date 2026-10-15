@@ -355,11 +355,13 @@ def test_to_schema_complete(repository, submission):
     assert schema.final_score == 80
 
 
-def test_to_schema_partial_fails(repository, submission):
+def test_to_schema_partial_is_supported(repository, submission):
     model = make_result(repository, submission)
-
-    with pytest.raises(ValueError):
-        repository.to_schema(model)
+    schema = repository.to_schema(model)
+    assert schema.code_score == model.code_score
+    assert schema.vision_score is None
+    assert schema.final_score is None
+    assert schema.status == "partial"
 
 
 # =====================================

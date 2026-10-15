@@ -71,6 +71,15 @@ class UserRepository:
 
         return list(self.db.scalars(statement).all())
 
+    def get_active_admins_for_update(self) -> list[User]:
+        statement = (
+            select(User)
+            .where(User.role == "admin", User.is_active.is_(True))
+            .order_by(User.id)
+            .with_for_update()
+        )
+        return list(self.db.scalars(statement).all())
+
     def update(
         self,
         user: User,

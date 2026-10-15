@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ai_grading_iot.models.practice import Practice as PracticeModel
+from ai_grading_iot.models.submission import Submission
 from ai_grading_iot.schemas.practice import (
     Practice as PracticeSchema,
     PracticeStatus,
@@ -69,6 +70,22 @@ class PracticeRepository:
             PracticeModel,
             practice_id,
         )
+
+    def get_for_update(self, practice_id: UUID) -> PracticeModel | None:
+        return self.db.scalar(
+            select(PracticeModel).where(PracticeModel.id == practice_id)
+            .with_for_update().execution_options(populate_existing=True)
+        )
+
+    def has_any(self, course_id: UUID) -> bool:
+        return self.db.scalar(
+            select(PracticeModel.id).where(PracticeModel.course_id == course_id).limit(1)
+        ) is not None
+
+    def has_submissions(self, practice_id: UUID) -> bool:
+        return self.db.scalar(
+            select(Submission.id).where(Submission.practice_id == practice_id).limit(1)
+        ) is not None
 
     def get_by_course(
         self,

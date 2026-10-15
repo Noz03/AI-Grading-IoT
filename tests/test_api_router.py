@@ -11,7 +11,11 @@ def test_api_routes_registered():
         "/",
         "/api/v1/practices",
         "/api/v1/rubrics",
-        "/api/v1/submissions",
+        "/api/v1/practices/{practice_id}/submissions",
+        "/api/v1/submissions/my",
+        "/api/v1/submissions/{submission_id}",
+        "/api/v1/submissions/{submission_id}/images",
+        "/api/v1/submissions/{submission_id}/images/{image_id}",
         "/api/v1/grading-results",
         "/api/v1/graders/code",
     }

@@ -81,6 +81,9 @@ class GradingResult(Base):
         nullable=True,
     )
 
+    data_evaluation: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    vision_evaluation: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+
     graded_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,

@@ -67,6 +67,27 @@ class CourseRepository:
 
         return list(self.db.scalars(statement).all())
 
+    def has_membership(self, course_id: UUID, user_id: UUID, role: str) -> bool:
+        model = CourseTeacher if role == "teacher" else CourseEnrollment
+        field = model.teacher_id if role == "teacher" else model.student_id
+        return self.db.scalar(
+            select(model.course_id).where(model.course_id == course_id, field == user_id)
+        ) is not None
+
+    def get_for_user(
+        self, user_id: UUID, role: str, *, limit: int = 20, offset: int = 0
+    ) -> list[Course]:
+        if not 1 <= limit <= 100 or offset < 0:
+            raise ValueError("Invalid pagination")
+        model = CourseTeacher if role == "teacher" else CourseEnrollment
+        field = model.teacher_id if role == "teacher" else model.student_id
+        statement = (
+            select(Course).join(model, model.course_id == Course.id)
+            .where(field == user_id).order_by(Course.code, Course.id)
+            .limit(limit).offset(offset)
+        )
+        return list(self.db.scalars(statement).all())
+
     def update(
         self,
         course: Course,

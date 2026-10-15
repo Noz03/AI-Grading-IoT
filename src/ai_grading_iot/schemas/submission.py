@@ -3,7 +3,8 @@ from enum import Enum
 from typing import Optional
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+from ai_grading_iot.schemas.data_evidence import DataEvidence
 
 
 class SubmissionStatus(str, Enum):
@@ -36,6 +37,8 @@ class Submission(BaseModel):
         default_factory=list,
         description="Danh sách đường dẫn, URL hoặc key hình ảnh chụp kit thực tế",
     )
+    data_evidence: DataEvidence | None = None
+    revision: int = Field(default=1, ge=1)
     status: SubmissionStatus = Field(
         default=SubmissionStatus.DRAFT,
         description="Trạng thái bài nộp (draft hoặc submitted)",
@@ -44,3 +47,23 @@ class Submission(BaseModel):
         default=None,
         description="Thời điểm bài được submit; null khi đang ở trạng thái draft",
     )
+
+
+class SubmissionCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    description: str = ""
+    code: str = ""
+
+
+class SubmissionUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    description: str | None = None
+    code: str | None = None
+    data_evidence: DataEvidence | None = None
+
+
+class ImageUploaded(BaseModel):
+    image_id: UUID
+    filename: str
+    content_type: str
+    url: str

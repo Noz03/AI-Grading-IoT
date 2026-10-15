@@ -58,6 +58,7 @@ class RubricRepository:
             select(RubricModel)
             .where(RubricModel.practice_id == practice_id)
             .order_by(RubricModel.type, RubricModel.id)
+            .execution_options(populate_existing=True)
         )
 
         return list(self.db.scalars(statement).all())

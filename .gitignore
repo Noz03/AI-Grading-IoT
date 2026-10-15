@@ -6,5 +6,12 @@ dist/
 wheels/
 *.egg-info
 .env
+uploads/
+models/**/*.pt
 # Virtual environments
 .venv
+
+#agents
+.agents/
+AGENTS.md
+docs/

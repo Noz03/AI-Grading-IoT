@@ -33,6 +33,8 @@ class GradingRepository:
         vision_score: float | None = None,
         final_score: float | None = None,
         code_evaluation: CodeEvaluation | None = None,
+        data_evaluation: dict | None = None,
+        vision_evaluation: dict | None = None,
     ) -> GradingResultModel:
 
         model = GradingResultModel(
@@ -46,6 +48,8 @@ class GradingRepository:
                 if code_evaluation is not None
                 else None
             ),
+            data_evaluation=data_evaluation,
+            vision_evaluation=vision_evaluation,
             graded_at=datetime.now(timezone.utc),
         )
 
@@ -122,6 +126,22 @@ class GradingRepository:
     # SAVE OR UPDATE
     # ==================================
 
+    def replace_evaluation(self, model: GradingResultModel, *,
+                           code_score: float | None, data_score: float | None,
+                           final_score: float | None,
+                           code_evaluation: CodeEvaluation | None,
+                           data_evaluation: dict | None) -> GradingResultModel:
+        """Atomic regrade replacement; unlike update(), None clears an old score."""
+        model.code_score = code_score
+        model.data_score = data_score
+        # A Code/Data regrade only replaces those components.
+        model.final_score = final_score
+        model.code_evaluation = code_evaluation.model_dump(mode="json") if code_evaluation else None
+        model.data_evaluation = data_evaluation
+        model.graded_at = datetime.now(timezone.utc)
+        self.db.flush()
+        return model
+
     def save_or_update(
         self,
         *,
@@ -175,16 +195,6 @@ class GradingRepository:
         model: GradingResultModel,
     ) -> GradingResultSchema:
 
-        if (
-            model.code_score is None
-            or model.vision_score is None
-            or model.final_score is None
-        ):
-            raise ValueError(
-                "GradingResult hiện chưa đủ các điểm "
-                "bắt buộc của Pydantic Schema cũ."
-            )
-
         return GradingResultSchema.model_validate(
             {
                 "id": model.id,
@@ -193,6 +203,13 @@ class GradingRepository:
                 "data_score": model.data_score,
                 "vision_score": model.vision_score,
                 "final_score": model.final_score,
+                "code_evaluation": model.code_evaluation,
+                "data_evaluation": model.data_evaluation,
+                "vision_evaluation": model.vision_evaluation,
+                "graded_at": model.graded_at,
+                "status": ("insufficient_evidence" if any(item and item.get("evidence_status") == "insufficient"
+                           for item in (model.data_evaluation, model.vision_evaluation)) else
+                           "complete" if model.final_score is not None else "partial"),
             }
         )
 

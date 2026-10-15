@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PracticeStatus(str, Enum):
@@ -103,3 +103,14 @@ class Practice(BaseModel):
     )
 
     metadata: PracticeMetadata
+
+
+class PracticeUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    title: str | None = Field(default=None, min_length=1)
+    description: str | None = Field(default=None, min_length=1)
+    requirements: PracticeRequirements | None = None
+    environment: PracticeEnvironment | None = None
+    hardware: list[PracticeHardware] | None = None
+    version: str | None = Field(default=None, pattern=r"^\d+\.\d+(\.\d+)?$")

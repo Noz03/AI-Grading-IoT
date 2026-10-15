@@ -4,6 +4,8 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from ai_grading_iot.models.course_enrollment import CourseEnrollment
+from ai_grading_iot.models.practice import Practice
 from ai_grading_iot.models.submission import (
     Submission as SubmissionModel,
 )
@@ -33,6 +35,8 @@ class SubmissionRepository:
             description=submission.description,
             code=submission.code,
             images=list(submission.images),
+            data_evidence=(submission.data_evidence.model_dump(mode="json") if submission.data_evidence else None),
+            revision=submission.revision,
             status=submission.status.value,
             submitted_at=submission.submitted_at,
         )
@@ -54,6 +58,11 @@ class SubmissionRepository:
         return self.db.get(
             SubmissionModel,
             submission_id,
+        )
+
+    def get_for_update(self, submission_id: UUID) -> SubmissionModel | None:
+        return self.db.scalar(
+            select(SubmissionModel).where(SubmissionModel.id == submission_id).with_for_update()
         )
 
     def get_by_practice_and_student(
@@ -120,6 +129,21 @@ class SubmissionRepository:
 
         return list(self.db.scalars(statement).all())
 
+    def get_by_student_with_enrollment(
+        self, student_id: UUID, *, limit: int = 20, offset: int = 0
+    ) -> list[SubmissionModel]:
+        self._validate_pagination(limit, offset)
+        statement = (
+            select(SubmissionModel)
+            .join(Practice, Practice.id == SubmissionModel.practice_id)
+            .join(CourseEnrollment, CourseEnrollment.course_id == Practice.course_id)
+            .where(SubmissionModel.student_id == student_id,
+                   CourseEnrollment.student_id == student_id)
+            .order_by(SubmissionModel.submitted_at.desc().nullslast(), SubmissionModel.id)
+            .limit(limit).offset(offset)
+        )
+        return list(self.db.scalars(statement).all())
+
     # ==================================
     # UPDATE
     # ==================================
@@ -149,6 +173,8 @@ class SubmissionRepository:
         model.description = submission.description
         model.code = submission.code
         model.images = list(submission.images)
+        model.data_evidence = submission.data_evidence.model_dump(mode="json") if submission.data_evidence else None
+        model.revision = submission.revision
         model.status = submission.status.value
         model.submitted_at = submission.submitted_at
 
@@ -185,6 +211,8 @@ class SubmissionRepository:
                 "description": model.description,
                 "code": model.code,
                 "images": model.images,
+                "data_evidence": model.data_evidence,
+                "revision": model.revision,
                 "status": model.status,
                 "submitted_at": model.submitted_at,
             }
